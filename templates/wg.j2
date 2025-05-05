@@ -1,0 +1,11 @@
+[Interface]
+PrivateKey = {{ private_key }}
+Address = {{ local_address }}
+ListenPort = {{ listen_port }}
+Table = off
+
+[Peer]
+PublicKey = {{ peer.PublicKey }}
+Endpoint = {{ peer.Endpoint }}
+AllowedIPs = 0.0.0.0/0
+PersistentKeepalive = {{ peer.Keepalive | default(25) }}

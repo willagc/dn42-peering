@@ -1,0 +1,34 @@
+name: Generate WireGuard Peering Configs
+
+on:
+  push:
+    paths:
+      - 'peers/**'
+      - 'scripts/gen_wg.py'
+      - 'templates/wg.j2'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wireguard python3-pip
+          pip3 install jinja2
+
+      - name: Generate WireGuard configs
+        run: |
+          python3 scripts/gen_wg.py
+
+      - name: Commit updated configs
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@users.noreply.github.com"
+          git add secrets/wireguard/
+          git commit -m "Auto-update WireGuard peer configs" || echo "No changes to commit"
+          git push
+
