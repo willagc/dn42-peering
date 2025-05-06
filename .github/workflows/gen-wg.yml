@@ -18,6 +18,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gnupg wireguard python3-pip
+          sudo apt-get install -y git-crypt
           pip3 install jinja2
 
       - name: Import GPG key
