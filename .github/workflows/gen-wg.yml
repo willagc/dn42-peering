@@ -11,24 +11,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y wireguard python3-pip
+          sudo apt-get install -y gnupg wireguard python3-pip
           pip3 install jinja2
+
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.CI_GPG_PRIVATE_KEY }}" | gpg --batch --import
+          echo "trusted-key $(gpg --list-keys --with-colons | awk -F: '/^fpr:/ { print $10 }')" >> ~/.gnupg/gpg.conf
+
+      - name: Unlock git-crypt
+        run: git-crypt unlock
 
       - name: Generate WireGuard configs
         run: |
           python3 scripts/gen_wg.py
 
-      - name: Commit updated configs
+      - name: Commit & push encrypted secrets
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
-          git add secrets/wireguard/
-          git commit -m "Auto-update WireGuard peer configs" || echo "No changes to commit"
+          git add secrets/
+          git commit -m "Encrypt + push secrets from CI" || echo "No changes"
           git push
-
